@@ -44,7 +44,6 @@ export default defineConfig({
     },
   },
   build: {
-    assetsDir: 'auth/assets',
     emptyOutDir: true,
     outDir: resolve(join(import.meta.dirname, 'dist')),
     sourcemap: true,
