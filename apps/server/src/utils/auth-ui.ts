@@ -9,7 +9,7 @@ export const SERVER_AUTH_UI_BASE_PATH = '/auth'
  * - Preserving query parameters from OIDC, verification, or reset flows.
  *
  * Expects:
- * - `authUiUrl` is the public auth UI base, usually ending in `/auth`.
+ * - `authUiUrl` is the public auth UI base, usually ending in `/ui`.
  * - `path` is the route path within the auth UI router.
  *
  * Returns:

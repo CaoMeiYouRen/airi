@@ -23,7 +23,7 @@ pnpm -F @proj-airi/ui-server-auth build
 
 ## Deployment
 
-`pnpm -F @proj-airi/ui-server-auth build` writes to `apps/ui-server-auth/dist`. Assets are emitted under `dist/auth/assets` because the app is served with the `/auth/` Vite base path. Cloudflare Pages uses `public/_redirects` to route `/auth/*` back to the SPA HTML.
+`pnpm -F @proj-airi/ui-server-auth build` writes to `apps/ui-server-auth/dist`. Vue Router owns `/ui/*`, while Vite assets are served from root `/assets/*` so Cloudflare Pages can serve static files without rewriting nested asset paths. Cloudflare Pages uses `public/_redirects` to route `/ui/*` back to the SPA HTML.
 
 The production GitHub Actions workflow deploys this app to the Cloudflare Pages project `moeru-ai-airi-auth` with separate auth-account credentials:
 
@@ -40,4 +40,6 @@ Production expects:
 VITE_SERVER_URL=https://api.airi.build
 ```
 
-The server redirects historical `/auth/*` URLs to `AUTH_UI_URL`, which defaults to `https://auth.airi.build/auth`.
+The server redirects historical `/auth/*` URLs to `AUTH_UI_URL`, which defaults to `https://auth.airi.build/ui`.
+
+The `server-dev` workflow deploys a Cloudflare Pages branch build at `https://server-dev.moeru-ai-airi-auth.pages.dev/ui/` with `VITE_SERVER_URL=https://airi-server-dev.up.railway.app`. Set the server-dev API environment variable `AUTH_UI_URL=https://server-dev.moeru-ai-airi-auth.pages.dev/ui` when the full dev auth redirect chain should stay on server-dev.

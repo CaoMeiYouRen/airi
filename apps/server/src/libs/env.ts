@@ -83,7 +83,7 @@ const EnvSchema = object({
   // Standalone auth UI base URL. The server keeps `/auth/*` as the historical
   // entrypoint and redirects those requests here after ui-server-auth moved out
   // of the server image.
-  AUTH_UI_URL: optional(string(), 'https://auth.airi.build/auth'),
+  AUTH_UI_URL: optional(string(), 'https://auth.airi.build/ui'),
 
   // Canonical user-facing web app origin. Used as the Stripe redirect base
   // (success_url / cancel_url / portal return_url) when a request has no trusted

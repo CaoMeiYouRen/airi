@@ -13,48 +13,15 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy - ${{ matrix.app_name }}
+    name: Deploy - stage-web
     runs-on: ubuntu-latest
     permissions:
       contents: read
       deployments: write
 
-    strategy:
-      matrix:
-        include:
-          - app_name: stage-web
-            environment_name: Production
-            environment_url: https://airi.moeru.ai/docs/
-            cloudflare_pages_id: moeru-ai-airi
-            dist_directory: ./apps/stage-web/dist
-            wrangler_config_path: ./apps/stage-web/wrangler.toml
-            cloudflare_api_token_secret: CLOUDFLARE_API_TOKEN
-            cloudflare_account_id_secret: CLOUDFLARE_ACCOUNT_ID
-            deploy_command: deploy -c ./apps/stage-web/wrangler.toml
-            command: |
-              pnpm -F @proj-airi/stage-web run build
-
-              pnpm -F @proj-airi/docs run build:base
-              mv ./docs/.vitepress/dist ./apps/stage-web/dist/docs
-              cp ./apps/stage-web/dist/docs/sitemap.xml ./apps/stage-web/dist/sitemap.xml
-
-              pnpm -F @proj-airi/stage-ui run story:build
-              mv ./packages/stage-ui/.histoire/dist ./apps/stage-web/dist/ui
-          - app_name: ui-server-auth
-            environment_name: Auth Production
-            environment_url: https://auth.airi.build/auth/
-            cloudflare_pages_id: moeru-ai-airi-auth
-            dist_directory: ./apps/ui-server-auth/dist
-            wrangler_config_path: ./apps/ui-server-auth/wrangler.toml
-            cloudflare_api_token_secret: AUTH_CLOUDFLARE_API_TOKEN
-            cloudflare_account_id_secret: AUTH_CLOUDFLARE_ACCOUNT_ID
-            deploy_command: pages deploy ./apps/ui-server-auth/dist --project-name=moeru-ai-airi-auth --branch=main
-            command: |
-              pnpm -F @proj-airi/ui-server-auth run build
-
     environment:
-      name: ${{ matrix.environment_name }}
-      url: ${{ matrix.environment_url }}
+      name: Production
+      url: https://airi.moeru.ai/docs/
 
     steps:
       - uses: actions/checkout@v6
@@ -87,7 +54,16 @@ jobs:
       - run: pnpm i -g wrangler@4
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build:packages
-      - run: ${{ matrix.command }}
+      - name: Build stage-web
+        run: |
+          pnpm -F @proj-airi/stage-web run build
+
+          pnpm -F @proj-airi/docs run build:base
+          mv ./docs/.vitepress/dist ./apps/stage-web/dist/docs
+          cp ./apps/stage-web/dist/docs/sitemap.xml ./apps/stage-web/dist/sitemap.xml
+
+          pnpm -F @proj-airi/stage-ui run story:build
+          mv ./packages/stage-ui/.histoire/dist ./apps/stage-web/dist/ui
         env:
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -98,8 +74,8 @@ jobs:
           WARP_DRIVE_PUBLIC_BASE: ${{ secrets.WARP_DRIVE_PUBLIC_BASE }}
       - run: |
           CI=true pnpm install -g @posthog/cli
-          pnpm exec posthog-cli sourcemap inject --directory ${{ matrix.dist_directory }}
-          pnpm exec posthog-cli sourcemap upload --directory ${{ matrix.dist_directory }}
+          pnpm exec posthog-cli sourcemap inject --directory ./apps/stage-web/dist
+          pnpm exec posthog-cli sourcemap upload --directory ./apps/stage-web/dist
         env:
           POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_ENV_ID }}
           POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_TOKEN }}
@@ -107,7 +83,7 @@ jobs:
 
       - uses: cloudflare/wrangler-action@v3.14.1
         with:
-          apiToken: ${{ secrets[matrix.cloudflare_api_token_secret] }}
-          accountId: ${{ secrets[matrix.cloudflare_account_id_secret] }}
-          command: ${{ matrix.deploy_command }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy -c ./apps/stage-web/wrangler.toml
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
