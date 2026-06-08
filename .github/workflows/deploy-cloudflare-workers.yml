@@ -27,6 +27,10 @@ jobs:
             environment_url: https://airi.moeru.ai/docs/
             cloudflare_pages_id: moeru-ai-airi
             dist_directory: ./apps/stage-web/dist
+            wrangler_config_path: ./apps/stage-web/wrangler.toml
+            cloudflare_api_token_secret: CLOUDFLARE_API_TOKEN
+            cloudflare_account_id_secret: CLOUDFLARE_ACCOUNT_ID
+            deploy_command: deploy -c ./apps/stage-web/wrangler.toml
             command: |
               pnpm -F @proj-airi/stage-web run build
 
@@ -36,6 +40,17 @@ jobs:
 
               pnpm -F @proj-airi/stage-ui run story:build
               mv ./packages/stage-ui/.histoire/dist ./apps/stage-web/dist/ui
+          - app_name: ui-server-auth
+            environment_name: Auth Production
+            environment_url: https://auth.airi.build/auth/
+            cloudflare_pages_id: moeru-ai-airi-auth
+            dist_directory: ./apps/ui-server-auth/dist
+            wrangler_config_path: ./apps/ui-server-auth/wrangler.toml
+            cloudflare_api_token_secret: AUTH_CLOUDFLARE_API_TOKEN
+            cloudflare_account_id_secret: AUTH_CLOUDFLARE_ACCOUNT_ID
+            deploy_command: pages deploy ./apps/ui-server-auth/dist --project-name=moeru-ai-airi-auth --branch=main
+            command: |
+              pnpm -F @proj-airi/ui-server-auth run build
 
     environment:
       name: ${{ matrix.environment_name }}
@@ -79,6 +94,7 @@ jobs:
           S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
           S3_REGION: ${{ secrets.S3_REGION }}
           VITE_ENABLE_POSTHOG: 'true'
+          VITE_SERVER_URL: 'https://api.airi.build'
           WARP_DRIVE_PUBLIC_BASE: ${{ secrets.WARP_DRIVE_PUBLIC_BASE }}
       - run: |
           CI=true pnpm install -g @posthog/cli
@@ -91,7 +107,7 @@ jobs:
 
       - uses: cloudflare/wrangler-action@v3.14.1
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy -c ./apps/stage-web/wrangler.toml
+          apiToken: ${{ secrets[matrix.cloudflare_api_token_secret] }}
+          accountId: ${{ secrets[matrix.cloudflare_account_id_secret] }}
+          command: ${{ matrix.deploy_command }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

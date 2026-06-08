@@ -82,4 +82,4 @@ Treat the email-auth feature as **partially shipped**. Sign-up + verify-email is
 - Email i18n (only English).
 - Resend bounce / complaint webhook ingestion.
 - Email send audit log in `request_log`.
-- dev/prod served-from parity (dev runs Vite at `:5174`; prod expects ui-server-auth dist under `apps/server/public/ui-server-auth`).
+- dev/prod served-from parity (dev runs Vite at `:5174`; prod expects ui-server-auth to be deployed from `apps/ui-server-auth/dist` via Cloudflare Workers Static Assets).
