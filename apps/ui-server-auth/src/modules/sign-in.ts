@@ -1,6 +1,7 @@
 import type { OAuthProvider } from '@proj-airi/stage-ui/libs/auth'
 
 import { extractAuthError } from './auth-fetch'
+import { buildAuthUiPath } from './auth-ui-base'
 
 export interface ServerSignInContext {
   callbackURL: string
@@ -56,10 +57,10 @@ function normalizeStandaloneRedirect(currentUrl: URL, redirect: string | null): 
   if (!redirect || !redirect.startsWith('/') || redirect.startsWith('//'))
     return null
 
-  if (redirect.startsWith('/admin') || redirect.startsWith('/auth'))
+  if (redirect.startsWith('/admin'))
     return `${currentUrl.origin}${redirect}`
 
-  return `${currentUrl.origin}/auth${redirect}`
+  return `${currentUrl.origin}${buildAuthUiPath(redirect)}`
 }
 
 export async function requestSocialSignInRedirect(params: SocialSignInRedirectParams): Promise<string> {

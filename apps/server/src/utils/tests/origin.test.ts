@@ -12,6 +12,10 @@ describe('origin utils', () => {
     expect(getTrustedOrigin('https://127.0.0.1:5273')).toBe('https://127.0.0.1:5273')
   })
 
+  it('allows the standalone auth UI origin', () => {
+    expect(getTrustedOrigin('https://auth.airi.build')).toBe('https://auth.airi.build')
+  })
+
   it('rejects private LAN Vite dev origins unless listed in ADDITIONAL_TRUSTED_ORIGINS', () => {
     expect(getTrustedOrigin('https://10.0.0.129:5273')).toBe('')
     expect(getTrustedOrigin('https://198.18.0.1:5273')).toBe('')

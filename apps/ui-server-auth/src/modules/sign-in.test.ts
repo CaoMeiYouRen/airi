@@ -58,6 +58,24 @@ describe('ui-server-auth sign-in flow helpers', () => {
     })
   })
 
+  it('normalizes standalone UI redirects under the deployed /ui base', () => {
+    expect(createServerSignInContext(
+      'https://auth.airi.test/ui/sign-in?redirect=%2Fprofile%3Ftab%3Dsecurity',
+      'https://api.airi.test',
+    )).toEqual({
+      callbackURL: 'https://auth.airi.test/ui/profile?tab=security',
+      requestedProvider: null,
+    })
+
+    expect(createServerSignInContext(
+      'https://auth.airi.test/ui/sign-in?redirect=%2Fauth%2Freset-password%3Ftoken%3Dold-link',
+      'https://api.airi.test',
+    )).toEqual({
+      callbackURL: 'https://auth.airi.test/ui/reset-password?token=old-link',
+      requestedProvider: null,
+    })
+  })
+
   it('posts the selected provider and callback URL to the social sign-in endpoint', async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => {
       return new Response(JSON.stringify({ url: 'https://accounts.example.test/oauth/google' }), {
